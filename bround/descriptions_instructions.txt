@@ -1,0 +1,24 @@
+Dimensions: 640 x 480 px
+Developer: Elihu Gideon
+
+Keywords: skill, ball, board, tile, minimalist, high scores, block, flat, bounce, casual, addictive
+
+description:
+Keep your ball on the screen for as long as possible and set a high score! 
+
+instructions:
+Click a tile to turn it into a wall so the ball can bounce off it and change direction.
+Get as many big balls as possible. The longer the game goes, the harder it gets.
+Play the game in Survival and Time Attack mode and set a high score! 
+
+//////////// Long Description:
+
+An addictive casual game about a bouncing ball on a board. Tap a tile to turn it into a wall so the ball can bounce off it and change direction. Get as many big balls as possible. The longer the game goes, the harder it gets. Play the game in Survival and Time Attack mode.
+
+In Survival Mode, some tiles and walls will fall down. Avoid falling into a hole or going out of the board.
+
+In Time Attack Mode, you have 60 seconds to collect big balls. Getting a big ball will give you a bonus time. You will gain longer bonus time if you get multiple big balls within a few seconds.
+
+There are more than 10 balls to unlock and to play with.
+
+Get and beat the high scores!
