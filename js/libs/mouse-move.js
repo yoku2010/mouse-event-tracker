@@ -25,13 +25,19 @@
 				$body: $('body')
 			},
 			vr: {
-				b: document.body,
-        de: document.documentElement,
 				mX: 0,
 				mY: 0,
-				sX: 0,
-				sY: 0,
+				eventName: '',
+				mXL: 0,
+				mYL: 0,
+				eventNameL: '',
+				width: 0,
+				height: 0,
+				offsetX: 0,
+				offsetY: 0,
 				queue: [],
+				errorMarginLeft: -30,
+				errorMarginTop: -20,
 				recordInterval: null,
 				playInterval: null
 			},
@@ -41,6 +47,7 @@
 					tme.func.createModal(tme.obj.$body);
 					tme.func.createCursor(tme.obj.$body);
 					tme.evnt.bindWindowEvents();
+					tme.func.getContainerSizeOffset();
 				},
 				createActionBar: function ($body) {
 					var $div = $('<div></div>').addClass('action-bar'),
@@ -111,7 +118,28 @@
           tme.obj.$modalBoxBody = $modalBody;
           tme.obj.$modalBox = $modal;
           $modal.appendTo($body);
-        }
+        },
+				queueMouseEvent: function (force) {
+					if (true === force) {
+						tme.func.saveMouseEvent();
+					}
+					else if (tme.vr.mXL !== tme.vr.mX && tme.vr.mYL !== tme.vr.mY) {
+						tme.func.saveMouseEvent();
+					}
+				},
+				saveMouseEvent: function () {
+					tme.vr.mXL = tme.vr.mX;
+					tme.vr.mYL = tme.vr.mY;
+					tme.vr.eventNameL = tme.vr.eventName;
+					tme.vr.queue.push([tme.vr.eventName, tme.vr.mX, tme.vr.mY, new Date().getTime(), tme.vr.height, tme.vr.width, tme.vr.offsetLeft, tme.vr.offsetTop]);
+				},
+				getContainerSizeOffset: function () {
+					var offset = tme.obj.$me.offset();
+					tme.vr.height = tme.obj.$me.height();
+					tme.vr.width = tme.obj.$me.width();
+					tme.vr.offsetLeft = offset.left;
+					tme.vr.offsetTop = offset.top;
+				}
 			},
 			evnt: {
 				recordEvents: function (me) {
@@ -123,7 +151,7 @@
 						$me.data('event-name', 'stop');
 						tme.vr.queue.length = 0;
             tme.vr.recordInterval = setInterval(function () {
-                tme.vr.queue.push([tme.vr.mX, tme.vr.mY, tme.vr.sX, tme.vr.sY]);
+                tme.func.queueMouseEvent(false);
             }, opt.interval);
 					}
 					else if ('stop' === action) {
@@ -141,9 +169,8 @@
 					tme.obj.$cursor.css('display', 'inherit');
 					tme.vr.playInterval = setInterval(function () {
 							if (i < queueLen) {
-									tme.obj.$cursor[0].style.left = tme.vr.queue[i][0] + "px";
-									tme.obj.$cursor[0].style.top = tme.vr.queue[i][1] + "px";
-									window.scrollTo(tme.vr.queue[i][2], tme.vr.queue[i][3]);
+									tme.obj.$cursor.css('left', (tme.vr.errorMarginLeft + tme.vr.queue[i][1] + tme.vr.queue[i][6]) + 'px');
+									tme.obj.$cursor.css('top', (tme.vr.errorMarginTop + tme.vr.queue[i][2] + tme.vr.queue[i][7]) + 'px');
 									i++;
 							} else {
 								clearInterval(tme.vr.playInterval);
@@ -159,41 +186,52 @@
 					$('<th></th>').text('Event').appendTo($tr);
 					$('<th></th>').text('Cursor X').appendTo($tr);
 					$('<th></th>').text('Cursor Y').appendTo($tr);
+					$('<th></th>').text('Timestamp').appendTo($tr);
+					$('<th></th>').text('Container Size').appendTo($tr);
 					$tr.appendTo($table);
 
-					for (;i<queueLen;i++) {
+					if (0 === queueLen) {
 						$tr = $('<tr></tr>');
-						$('<td></td>').text('Move').appendTo($tr);
-						$('<td></td>').text(tme.vr.queue[i][0]).appendTo($tr);
-						$('<td></td>').text(tme.vr.queue[i][1]).appendTo($tr);
+						$('<td></td>').attr('colspan', 5).text('No Events!!! Please click on "Record" button to record events.').appendTo($tr);
 						$tr.appendTo($table);
+					}
+					else {
+						for (;i<queueLen;i++) {
+							$tr = $('<tr></tr>');
+							$('<td></td>').text(tme.vr.queue[i][0]).appendTo($tr);
+							$('<td></td>').text(tme.vr.queue[i][1]).appendTo($tr);
+							$('<td></td>').text(tme.vr.queue[i][2]).appendTo($tr);
+							$('<td></td>').text(tme.vr.queue[i][3]).appendTo($tr);
+							$('<td></td>').text(tme.vr.queue[i][4] + 'x' + tme.vr.queue[i][5]).appendTo($tr);
+							$tr.appendTo($table);
+						}
 					}
 					$table.appendTo(tme.obj.$modalBoxBody.empty());
 					tme.obj.$modalBox.modal();
 				},
-				bindWindowEvents: function () {
-					var $window = $(window);
-					$window[0].onmousemove = function (e) {
-			        e = e || window.event;
-			        if (e.pageX || e.pageY) {
-			            tme.vr.mX = e.pageX;
-			            tme.vr.mY = e.pageY;
-			        } else {
-			            tme.vr.mX = e.clientX + (tme.vr.de.scrollLeft || tme.vr.b.scrollLeft) -
-			                (tme.vr.de.clientLeft || 0);
-			            tme.vr.mY = e.clientY + (tme.vr.de.scrollTop || tme.vr.b.scrollTop) -
-			                (tme.vr.de.clientTop || 0);
-			        }
-			    };
-					$window[0].onscroll = function () {
-			        if (window.pageXOffset || window.pageYOffset) {
-			            tme.vr.sX = window.pageXOffset;
-			            tme.vr.sY = window.pageYOffset;
-			        } else {
-			            tme.vr.sX = tme.vr.de.scrollLeft || tme.vr.b.scrollLeft;
-			            tme.vr.sY = tme.vr.de.scrollTop || tme.vr.b.scrollTop;
-			        }
-			    };
+				bindWindowEvents: function() {
+					tme.obj.$me.mousedown(function(e) {
+						tme.vr.mX = e.pageX - tme.vr.offsetLeft;
+						tme.vr.mY = e.pageY - tme.vr.offsetTop;
+						tme.vr.eventName = 'Click';
+						tme.func.queueMouseEvent(true);
+					}).mousemove(function(e){
+						tme.vr.mX = e.pageX - tme.vr.offsetLeft;;
+						tme.vr.mY = e.pageY - tme.vr.offsetTop;;
+						tme.vr.eventName = 'Move';
+					}).mouseenter(function(e){
+						tme.vr.mX = e.pageX - tme.vr.offsetLeft;;
+						tme.vr.mY = e.pageY - tme.vr.offsetTop;
+						tme.vr.eventName = 'Enter';	// it has been replaced by move event
+						tme.func.queueMouseEvent(true);
+					}).mouseleave(function(e) {
+						tme.vr.mX = e.pageX - tme.vr.offsetLeft;;
+						tme.vr.mY = e.pageY - tme.vr.offsetTop;;
+						tme.vr.eventName = 'Leave';
+					});
+					$( window ).resize(function() {
+						tme.func.getContainerSizeOffset();
+					});
 				}
 			}
 		};
