@@ -36,6 +36,7 @@
 				offsetX: 0,
 				offsetY: 0,
 				queue: [],
+				isRecording: false,
 				errorMarginLeft: -30,
 				errorMarginTop: -20,
 				recordInterval: null,
@@ -128,10 +129,12 @@
 					}
 				},
 				saveMouseEvent: function () {
-					tme.vr.mXL = tme.vr.mX;
-					tme.vr.mYL = tme.vr.mY;
-					tme.vr.eventNameL = tme.vr.eventName;
-					tme.vr.queue.push([tme.vr.eventName, tme.vr.mX, tme.vr.mY, new Date().getTime(), tme.vr.height, tme.vr.width, tme.vr.offsetLeft, tme.vr.offsetTop]);
+					if (tme.vr.isRecording) {
+						tme.vr.mXL = tme.vr.mX;
+						tme.vr.mYL = tme.vr.mY;
+						tme.vr.eventNameL = tme.vr.eventName;
+						tme.vr.queue.push([tme.vr.eventName, tme.vr.mX, tme.vr.mY, new Date().getTime(), tme.vr.height, tme.vr.width, tme.vr.offsetLeft, tme.vr.offsetTop]);
+					}
 				},
 				getContainerSizeOffset: function () {
 					var offset = tme.obj.$me.offset();
@@ -145,6 +148,7 @@
 				recordEvents: function (me) {
 					var $me = $(me), action = $me.data('event-name');
 					if ('record' === action ) {
+						tme.vr.isRecording = true;
 						tme.obj.$msg.text('Recording.....');
 						$me.text('Stop');
 						tme.obj.$play.prop('disabled', true).addClass('disabled');
@@ -155,6 +159,7 @@
             }, opt.interval);
 					}
 					else if ('stop' === action) {
+						tme.vr.isRecording = false;
 						tme.obj.$msg.text('Recording done, click on "Play" button to play');
 						$me.text('Record');
 						tme.obj.$play.prop('disabled', false).removeClass('disabled');
